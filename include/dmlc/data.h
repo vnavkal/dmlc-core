@@ -154,6 +154,8 @@ struct RowBlock {
   const real_t *label;
   /*! \brief With weight: array[size] label of each instance, otherwise nullptr */
   const real_t *weight;
+  /*! \brief With timing: array[size] label of each instance, otherwise nullptr */
+  const real_t *timing;
   /*! \brief field id*/
   const IndexType *field;
   /*! \brief feature index */
@@ -170,6 +172,7 @@ struct RowBlock {
   inline size_t MemCostBytes(void) const {
     size_t cost = size * (sizeof(size_t) + sizeof(real_t));
     if (weight != NULL) cost += size * sizeof(real_t);
+    if (timing != NULL) cost += size * sizeof(real_t);
     size_t ndata = offset[size] - offset[0];
     if (field != NULL) cost += ndata * sizeof(IndexType);
     if (index != NULL) cost += ndata * sizeof(IndexType);
@@ -191,6 +194,11 @@ struct RowBlock {
       ret.weight = weight + begin;
     } else {
       ret.weight = NULL;
+    }
+    if (timing != NULL) {
+      ret.timing = timing + begin;
+    } else {
+      ret.timing = NULL;
     }
     ret.offset = offset + begin;
     ret.field = field;
@@ -331,6 +339,11 @@ RowBlock<IndexType>::operator[](size_t rowid) const {
     inst.weight = weight[rowid];
   } else {
     inst.weight = 1.0f;
+  }
+  if (timing != NULL) {
+    inst.timing = timing[rowid];
+  } else {
+    inst.timing = 1.0f;
   }
   inst.length = offset[rowid + 1] - offset[rowid];
   if (field != NULL) {
